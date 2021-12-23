@@ -79,4 +79,4 @@ jobs:
           registry: "https://registry.npmjs.org" # npm registry
           access: "public" # only people in our org can access this pkg
           package: "./web/package.json"
-          dry-run: true # for testing purposes
+          # dry-run: true # for testing purposes
