@@ -72,6 +72,6 @@ jobs:
           cd web
           npm install
           npm run build
-          npm publish --public
+          npm publish --access=public
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
