@@ -67,5 +67,5 @@ jobs:
           npm install
           npm run build
           npm publish --public
-      env:
-        NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
