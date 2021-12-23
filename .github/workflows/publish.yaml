@@ -57,21 +57,26 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
       - uses: actions/download-artifact@v2
         with:
           name: typescript-axios
           path: web
-      - name: Configure git # needed for npm version commands
-        env:
-          NPM_EMAIL: ${{ secrets.NPM_EMAIL }}
-        run: |
-          git config user.email "$NPM_EMAIL"
-          git config user.name "admin"
       - run: |
           cd web
           npm install
           npm run build
-          npm publish --access=public
+      # deploy
+      - name: Configure git # needed for npm version commands
+        run: |
+          git config user.email "$NODE_EMAIL"
+          git config user.name "admin"
         env:
-          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+          NODE_EMAIL: ${{ secrets.NODE_EMAIL }}
+      - uses: JS-DevTools/npm-publish@v1 # publish to private registry
+        if: ${{ success() }}
+        with:
+          token: ${{ secrets.NPM_TOKEN }}
+          registry: "https://registry.npmjs.org" # npm registry
+          access: "public" # only people in our org can access this pkg
+          package: "./web/package.json"
+          dry-run: true # for testing purposes
