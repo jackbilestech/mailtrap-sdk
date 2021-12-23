@@ -1,0 +1,71 @@
+name: publish-npm-package
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  get-version:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.grep.outputs.value }}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 14
+      - run: npm install -g yaml-cli
+      - run: |
+          string=$(yaml get $(pwd)/reference/api.yaml info | grep -w version: | cut -f2- -d: | sed 's/^[[:space:]]*//g')
+          echo ::set-output name=value::$string
+        id: grep
+      - uses: actions/upload-artifact@v2
+        with:
+          name: oas-ref
+          path: |
+            reference
+    
+  build:
+    needs: get-version
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - gen: typescript-axios
+            add-props: useSingleRequestParameter=true,npmName=@${{ github.repository }},npmVersion=${{ needs.get-deps.outputs.version }}
+            output: web
+    steps:
+      - uses: actions/download-artifact@v2
+        with:
+          name: oas-ref
+          path: oas-ref
+      - run : |
+          mkdir ${{ matrix.output }}
+          docker run --rm -v "$(pwd):/local" openapitools/openapi-generator-cli:v5.3.0 generate \
+          -g ${{ matrix.gen }} \
+          -i /local/oas-ref/api.yaml \
+          -o /local/${{ matrix.output }} \
+          --additional-properties=${{ matrix.add-props }}
+      - uses: actions/upload-artifact@v2
+        with:
+          name: ${{ matrix.gen }}
+          path: |
+            ${{ matrix.output }}
+  npm:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: typescript-axios
+          path: web
+      - run: |
+          cd web
+          npm install
+          npm run build
+          npm publish --public
+      env:
+        NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}

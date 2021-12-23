@@ -1,0 +1,1231 @@
+openapi: 3.0.0
+info:
+  title: api
+  version: '0.1.0'
+servers:
+  - url: 'https://mailtrap.io/api/v1/'
+tags:
+  - name: inbox
+    description: This is a section of resources related to the inbox
+  - name: message
+    description: This is a section of resources related to a message
+paths:
+  /inboxes:
+    get:
+      summary: Get All Inboxes
+      tags:
+        - inbox
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                description: ''
+                minItems: 1
+                uniqueItems: true
+                x-examples:
+                  example-1:
+                    - id: 3
+                      company_id: 1
+                      name: Test inbox
+                      domain: smtp.mailtrap.io
+                      username: 1da91769512fb
+                      password: d71dfda027b54a
+                      status: active
+                      max_size: 1000
+                      emails_count: 997
+                      emails_unread_count: 0
+                      email_username: example-username
+                      email_username_enabled: false
+                      email_domain: inbox.mailtrap.io
+                      last_message_sent_at: '2013-09-30T19:01:47.000Z'
+                      sent_messages_count: 1023
+                      forwarded_messages_count: 23
+                      pop3_domain: pop3.mailtrap.io
+                      smtp_ports:
+                        - 25
+                        - 465
+                        - 2525
+                      pop3_ports:
+                        - 1100
+                        - 9950
+                      has_inbox_address: false
+                items:
+                  $ref: '#/components/schemas/Inbox'
+        '':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Inbox'
+      operationId: get-inboxes
+      description: Get a list of inboxes
+    parameters: []
+  '/inboxes/{inbox_id}':
+    parameters:
+      - name: inbox_id
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: ' inbox ID (identifier)'
+    get:
+      summary: Get Inbox
+      tags:
+        - inbox
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Inbox'
+      operationId: get-inbox
+      description: Get inbox
+    patch:
+      summary: Update Inbox
+      operationId: patch-inbox
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Inbox'
+      description: Update inbox
+      requestBody:
+        content:
+          application/json:
+            schema:
+              title: patch-inbox-body
+              type: object
+              properties:
+                inbox:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                    email:
+                      type: string
+      tags:
+        - inbox
+    delete:
+      summary: Delete Inbox
+      operationId: delete-inbox
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Inbox'
+      description: Delete inbox
+      tags:
+        - inbox
+  '/inboxes/{inbox_id}/clean':
+    patch:
+      summary: Clean Inbox
+      operationId: patch-inbox-clean
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Inbox'
+        '':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Inbox'
+      description: Delete all messages (emails) from inbox
+      tags:
+        - inbox
+    parameters:
+      - $ref: '#/components/parameters/Inbox-Id'
+  '/inboxes/{inbox_id}/reset_credentials':
+    patch:
+      summary: Reset Credentials
+      tags:
+        - inbox
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Inbox'
+      operationId: patch-inbox-reset_credentials
+      description: Reset inbox credentials
+    parameters:
+      - $ref: '#/components/parameters/Inbox-Id'
+  '/inboxes/{inbox_id}/all_read':
+    parameters:
+      - $ref: '#/components/parameters/Inbox-Id'
+    patch:
+      summary: Mark All As Read
+      operationId: patch-inbox-all_read
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Inbox'
+      tags:
+        - inbox
+      description: Mark all messages (emails) as read
+  '/inboxes/{inbox_id}/reset_email_username':
+    patch:
+      summary: Your GET endpoint
+      tags:
+        - inbox
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Inbox'
+      operationId: patch-inbox-reset_email_username
+      description: Reset inbox email address
+    parameters:
+      - $ref: '#/components/parameters/Inbox-Id'
+  '/inboxes/{inbox_id}/toggle_email_username':
+    patch:
+      summary: Toggle Email Username
+      tags:
+        - inbox
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Inbox'
+      operationId: patch-inbox-toggle_email_username
+      description: Enable/disable retrieval of messages in this inbox to the specified email address
+    parameters:
+      - $ref: '#/components/parameters/Inbox-Id'
+  '/inboxes/{inbox_id}/messages':
+    get:
+      summary: Get All Messages
+      tags:
+        - message
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Message'
+      operationId: get-inbox-messages
+      parameters:
+        - schema:
+            type: string
+          in: query
+          name: search
+          description: 'filter emails by this key; it works like case insensitive pattern matching by subject, to_email, to_name, namely if any of these fields at least start with the given search query, the response will return a result'
+        - schema:
+            type: integer
+            default: 1
+          in: query
+          name: page
+          description: 'page of emails (per page = 30 messages, does not work with last_id param)'
+        - schema:
+            type: integer
+          in: query
+          name: last_id
+          description: ' get emails, where primary key is less then this param (does not work with page param)'
+      description: Get messages from inbox
+    parameters:
+      - $ref: '#/components/parameters/Inbox-Id'
+  '/inboxes/{inbox_id}/messages/{message_id}':
+    get:
+      summary: Get A Message
+      tags:
+        - message
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+      operationId: get-inbox-message
+      description: Get one message from inbox
+    parameters:
+      - name: inbox_id
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: ' inbox ID (identifier)'
+      - name: message_id
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: message ID (identifier)
+    patch:
+      summary: Update Message
+      operationId: patch-inbox-message
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+      description: Update message attributes
+      tags:
+        - message
+      requestBody:
+        content:
+          application/json:
+            schema:
+              title: patch-inbox-message-body
+              type: object
+              properties:
+                message:
+                  type: object
+                  properties:
+                    is_read:
+                      type:
+                        - string
+                        - boolean
+        description: (right now only the is_read attribute is available for modification)
+    delete:
+      summary: Delete Message
+      operationId: delete-inbox-message
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+      description: Delete email from inbox
+      tags:
+        - message
+  '/inboxes/{inbox_id}/messages/{message_id}/forward':
+    post:
+      summary: Forward Message
+      tags:
+        - message
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+      operationId: post-inbox-messages-forward
+      description: Forward message to an email address
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+              required:
+                - email
+    parameters:
+      - name: inbox_id
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: ' inbox ID (identifier)'
+      - $ref: '#/components/parameters/message-id'
+  '/inboxes/{inbox_id}/messages/{message_id}/body.html':
+    get:
+      summary: Get Message Body HTML
+      tags:
+        - message
+      responses:
+        '200':
+          description: OK
+          content:
+            text/html:
+              schema:
+                type: string
+      operationId: get-inbox-message-body-html
+      description: Get formatted HTML email body (if exists)
+    parameters:
+      - name: inbox_id
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: ' inbox ID (identifier)'
+      - $ref: '#/components/parameters/message-id'
+  '/inboxes/{inbox_id}/messages/{message_id}/body.htmlsource':
+    get:
+      summary: Get Message Body HTMLSOURCE
+      tags:
+        - message
+      responses:
+        '200':
+          description: OK
+          content:
+            text/html:
+              schema:
+                type: string
+      operationId: get-inbox-message-body-htmlsource
+      description: Get RAW HTML email body (if exists)
+    parameters:
+      - name: inbox_id
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: ' inbox ID (identifier)'
+      - $ref: '#/components/parameters/message-id'
+  '/inboxes/{inbox_id}/messages/{message_id}/body.txt':
+    get:
+      summary: Get Message Body TXT
+      tags:
+        - message
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                type: string
+      operationId: get-inbox-message-body-txt
+      description: Get TEXT email body (if exists)
+    parameters:
+      - name: inbox_id
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: ' inbox ID (identifier)'
+      - $ref: '#/components/parameters/message-id'
+  '/inboxes/{inbox_id}/messages/{message_id}/body.raw':
+    get:
+      summary: Get Message Body RAW
+      tags:
+        - message
+      responses: {}
+      operationId: get-inbox-message-body-raw
+      requestBody:
+        content:
+          text/plain:
+            schema:
+              type: string
+      description: Get RAW email body
+    parameters:
+      - name: inbox_id
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: ' inbox ID (identifier)'
+      - $ref: '#/components/parameters/message-id'
+  '/inboxes/{inbox_id}/messages/{message_id}/body.eml':
+    get:
+      summary: Get Message Body EML
+      tags:
+        - message
+      responses:
+        '200':
+          description: OK
+          content:
+            message/rfc822:
+              schema:
+                type: string
+      operationId: get-inbox-message-body-eml
+      description: Download RAW email body
+    parameters:
+      - name: inbox_id
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: ' inbox ID (identifier)'
+      - $ref: '#/components/parameters/message-id'
+  'inboxes/{inbox_id}/messages/{message_id}/mail_headers':
+    get:
+      summary: Get Message Headers
+      tags:
+        - message
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message_Headers'
+      operationId: get-inbox-message-mail_headers
+      description: 'Get all message headers. Header names are normalized to lowercase and underscore, e.g. “X-Mailer” is normalized to “x_mailer”.'
+    parameters:
+      - name: inbox_id
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: ' inbox ID (identifier)'
+      - name: message_id
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: message ID (identifier)
+  '/inboxes/{inbox_id}/messages/{message_id}/spam_report':
+    get:
+      summary: Get Message Spam Report
+      tags:
+        - message
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Spam_Report'
+      operationId: get-inbox-inbox-message-spam_report
+      description: Get spam report for message
+    parameters:
+      - $ref: '#/components/parameters/Inbox-Id'
+      - $ref: '#/components/parameters/message-id'
+  '/inboxes/{inbox_id}/messages/{message_id}/analyze':
+    get:
+      summary: Get Message HTML Info
+      tags:
+        - message
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message_Analysis'
+      operationId: get-inbox-message-analyze
+      description: Get info about the HTML part
+    parameters:
+      - $ref: '#/components/parameters/Inbox-Id'
+      - $ref: '#/components/parameters/message-id'
+components:
+  schemas:
+    Inbox:
+      description: ''
+      type: object
+      properties:
+        id:
+          type: number
+        company_id:
+          type: number
+        name:
+          type: string
+          minLength: 1
+        domain:
+          type: string
+          minLength: 1
+        username:
+          type: string
+          minLength: 1
+        password:
+          type: string
+          minLength: 1
+        status:
+          type: string
+          minLength: 1
+        max_size:
+          type: number
+        emails_count:
+          type: number
+        emails_unread_count:
+          type: number
+        email_username:
+          type: string
+          minLength: 1
+        email_username_enabled:
+          type: boolean
+        email_domain:
+          type: string
+          minLength: 1
+        last_message_sent_at:
+          type: string
+          minLength: 1
+        sent_messages_count:
+          type: number
+        forwarded_messages_count:
+          type: number
+        pop3_domain:
+          type: string
+          minLength: 1
+        smtp_ports:
+          type: array
+          items:
+            required: []
+            properties: {}
+        pop3_ports:
+          type: array
+          items:
+            required: []
+            properties: {}
+        has_inbox_address:
+          type: boolean
+      required:
+        - id
+        - company_id
+        - name
+        - domain
+        - username
+        - password
+        - status
+        - max_size
+        - emails_count
+        - emails_unread_count
+        - email_username
+        - email_username_enabled
+        - email_domain
+        - last_message_sent_at
+        - sent_messages_count
+        - forwarded_messages_count
+        - pop3_domain
+        - smtp_ports
+        - pop3_ports
+        - has_inbox_address
+      x-examples:
+        example-1:
+          id: 3
+          company_id: 1
+          name: Test inbox
+          domain: smtp.mailtrap.io
+          username: 1da91769512fb
+          password: d71dfda027b54a
+          status: active
+          max_size: 1000
+          emails_count: 997
+          emails_unread_count: 0
+          email_username: example-username
+          email_username_enabled: false
+          email_domain: inbox.mailtrap.io
+          last_message_sent_at: '2013-09-30T19:01:47.000Z'
+          sent_messages_count: 1023
+          forwarded_messages_count: 23
+          pop3_domain: pop3.mailtrap.io
+          smtp_ports:
+            - 25
+            - 465
+            - 2525
+          pop3_ports:
+            - 1100
+            - 9950
+          has_inbox_address: false
+    Message:
+      description: ''
+      type: object
+      properties:
+        id:
+          type: number
+        inbox_id:
+          type: number
+        subject:
+          type: string
+          minLength: 1
+        sent_at:
+          type: string
+          minLength: 1
+        from_email:
+          type: string
+          minLength: 1
+        from_name:
+          type: string
+          minLength: 1
+        to_email:
+          type: string
+          minLength: 1
+        to_name:
+          type: string
+          minLength: 1
+        email_size:
+          type: number
+        html_body_size:
+          type: number
+        text_body_size:
+          type: number
+        is_read:
+          type: boolean
+        created_at:
+          type: string
+          minLength: 1
+        updated_at:
+          type: string
+          minLength: 1
+        human_size:
+          type: string
+          minLength: 1
+        html_path:
+          type: string
+          minLength: 1
+        html_source_path:
+          type: string
+          minLength: 1
+        txt_path:
+          type: string
+          minLength: 1
+        raw_path:
+          type: string
+          minLength: 1
+        download_path:
+          type: string
+          minLength: 1
+        blacklists_report_info:
+          type: object
+          properties:
+            result:
+              type: string
+              minLength: 1
+            domain:
+              type: string
+              minLength: 1
+            ip:
+              type: string
+              minLength: 1
+            report:
+              type: array
+              uniqueItems: true
+              minItems: 1
+              items:
+                required:
+                  - name
+                  - url
+                  - in_black_list
+                properties:
+                  name:
+                    type: string
+                    minLength: 1
+                  url:
+                    type: string
+                    minLength: 1
+                  in_black_list:
+                    type: boolean
+          required:
+            - result
+            - domain
+            - ip
+            - report
+      required:
+        - id
+        - inbox_id
+        - subject
+        - sent_at
+        - from_email
+        - from_name
+        - to_email
+        - to_name
+        - email_size
+        - html_body_size
+        - text_body_size
+        - is_read
+        - created_at
+        - updated_at
+        - human_size
+        - html_path
+        - html_source_path
+        - txt_path
+        - raw_path
+        - download_path
+        - blacklists_report_info
+      x-examples:
+        example-1:
+          id: 54864
+          inbox_id: 1
+          subject: SMTP e-mail test
+          sent_at: '2013-08-25T19:32:07.567+03:00'
+          from_email: me@railsware.com
+          from_name: Private Person
+          to_email: test@railsware.com
+          to_name: A Test User
+          email_size: 193
+          html_body_size: 100
+          text_body_size: 20
+          is_read: true
+          created_at: '2013-08-25T19:32:07.576+03:00'
+          updated_at: '2013-08-25T19:32:09.232+03:00'
+          human_size: 193 Bytes
+          html_path: /api/v1/inboxes/1/messages/54864/body.html
+          html_source_path: /api/v1/inboxes/1/messages/54864/body.htmlsource
+          txt_path: /api/v1/inboxes/1/messages/54864/body.txt
+          raw_path: /api/v1/inboxes/1/messages/54864/body.raw
+          download_path: /api/v1/inboxes/1/messages/54864/body.eml
+          blacklists_report_info:
+            result: success
+            domain: railsware.com
+            ip: 176.9.59.196
+            report:
+              - name: AHBL
+                url: 'http://www.ahbl.org/'
+                in_black_list: false
+              - name: BACKSCATTERER
+                url: 'http://www.backscatterer.org/index.php'
+                in_black_list: false
+              - name: BARRACUDA
+                url: 'http://barracudacentral.org/rbl'
+                in_black_list: false
+              - name: BURNT-TECH
+                url: 'http://dnsbl.burnt-tech.com/'
+                in_black_list: false
+              - name: CASA-CBLPLUS
+                url: 'http://www.anti-spam.org.cn/CID/17'
+                in_black_list: false
+              - name: IMP-SPAM
+                url: 'http://antispam.imp.ch/?lng=1'
+                in_black_list: false
+              - name: INPS_DE
+                url: 'http://dnsbl.inps.de/index.cgi?lang=en'
+                in_black_list: false
+              - name: INVALUEMENT
+                url: 'http://dnsbl.invaluement.com/'
+                in_black_list: false
+              - name: LASHBACK
+                url: 'http://www.lashback.com/support/UnsubscribeBlacklistSupport.aspx'
+                in_black_list: false
+              - name: NIXSPAM
+                url: 'http://www.heise.de/ix/nixspam/dnsbl_en/'
+                in_black_list: false
+              - name: PSBL
+                url: 'http://psbl.surriel.com/'
+                in_black_list: false
+              - name: RATS-ALL
+                url: 'http://www.spamrats.com/'
+                in_black_list: false
+              - name: SEM-BACKSCATTER
+                url: 'http://spameatingmonkey.com/index.html'
+                in_black_list: false
+              - name: SEM-BLACK
+                url: 'http://spameatingmonkey.com/index.html'
+                in_black_list: false
+              - name: SORBS-DUHL
+                url: 'http://www.sorbs.net/lookup.shtml'
+                in_black_list: false
+              - name: SORBS-SPAM
+                url: 'http://www.sorbs.net/lookup.shtml'
+                in_black_list: false
+              - name: SPAMCOP
+                url: 'http://spamcop.net/bl.shtml'
+                in_black_list: false
+              - name: SPAMHAUS-ZEN
+                url: 'http://www.spamhaus.org/'
+                in_black_list: false
+              - name: TRUNCATE
+                url: 'http://www.gbudb.com/truncate/index.jsp'
+                in_black_list: false
+    Message_Headers:
+      description: ''
+      type: object
+      properties:
+        headers:
+          type: object
+          properties:
+            message_id:
+              type: string
+              minLength: 1
+            date:
+              type: string
+              minLength: 1
+            x_mailer:
+              type: string
+              minLength: 1
+            sender: {}
+            from:
+              type: string
+              minLength: 1
+            to:
+              type: string
+              minLength: 1
+            cc:
+              type: string
+              minLength: 1
+            bcc: {}
+            resent_bcc: {}
+          required:
+            - message_id
+            - date
+            - x_mailer
+            - from
+            - to
+            - cc
+      required:
+        - headers
+      x-examples:
+        example-1:
+          headers:
+            message_id: 0d5d0266aadcf764e7b171154ea6ac@alexeys-macbook-pro-2.local
+            date: 'Fri, 18 Apr 2014 12:37:40 +0000'
+            x_mailer: Super SMTP client
+            sender: null
+            from: From Name <from@example.com>
+            to: Receiver Name <to@example.com>
+            cc: Receiver Second Name <to2@example.com>
+            bcc: null
+            resent_bcc: null
+    Spam_Report:
+      description: ''
+      type: object
+      properties:
+        report:
+          type: object
+          properties:
+            ResponseCode:
+              type: number
+            ResponseMessage:
+              type: string
+              minLength: 1
+            Score:
+              type: number
+            Spam:
+              type: boolean
+            Threshold:
+              type: number
+            Details:
+              type: array
+              uniqueItems: true
+              minItems: 1
+              items:
+                required:
+                  - Pts
+                  - RuleName
+                  - Description
+                properties:
+                  Pts:
+                    type: string
+                    minLength: 1
+                  RuleName:
+                    type: string
+                    minLength: 1
+                  Description:
+                    type: string
+                    minLength: 1
+          required:
+            - ResponseCode
+            - ResponseMessage
+            - Score
+            - Spam
+            - Threshold
+            - Details
+      required:
+        - report
+      x-examples:
+        example-1:
+          report:
+            ResponseCode: 0
+            ResponseMessage: EX_OK
+            Score: 1.5
+            Spam: false
+            Threshold: 5
+            Details:
+              - Pts: '-0.0'
+                RuleName: NO_RELAYS
+                Description: 'Informational: message was not relayed via SMTP'
+              - Pts: '0.1'
+                RuleName: MISSING_MID
+                Description: 'Missing Message-Id: header'
+              - Pts: '-0.0'
+                RuleName: NO_RECEIVED
+                Description: 'Informational: message has no Received headers'
+              - Pts: '1.4'
+                RuleName: MISSING_DATE
+                Description: 'Missing Date: header'
+    Message_Analysis:
+      description: ''
+      type: object
+      properties:
+        report:
+          type: object
+          properties:
+            status:
+              type: string
+              minLength: 1
+            errors:
+              type: array
+              uniqueItems: true
+              minItems: 1
+              items:
+                required:
+                  - error_line
+                  - rule_name
+                properties:
+                  error_line:
+                    type: number
+                  rule_name:
+                    type: string
+                    minLength: 1
+                  email_clients:
+                    type: object
+                    properties:
+                      web:
+                        type: array
+                        items:
+                          required: []
+                          properties: {}
+                      desktop:
+                        type: array
+                        items:
+                          required: []
+                          properties: {}
+                    required:
+                      - web
+                      - desktop
+          required:
+            - status
+            - errors
+      required:
+        - report
+      x-examples:
+        example-1:
+          report:
+            status: success
+            errors:
+              - error_line: 3
+                rule_name: background-image
+                email_clients:
+                  web:
+                    - Outlook.com
+                  desktop:
+                    - Outlook '07 / '10 / ‘13
+                    - Notes 6 / 7
+                    - Lotus Notes 8.5
+              - error_line: 3
+                rule_name: background-position
+                email_clients:
+                  web:
+                    - Outlook.com
+                  desktop:
+                    - Outlook '07 / '10 / ‘13
+                    - Notes 6 / 7
+                    - Lotus Notes 8.5
+                  mobile:
+                    - Gmail
+                    - Windows Mobile 7.5
+              - error_line: 3
+                rule_name: background-repeat
+                email_clients:
+                  web:
+                    - Outlook.com
+                  desktop:
+                    - Outlook '07 / '10 / ‘13
+                    - Notes 6 / 7
+                    - Lotus Notes 8.5
+              - error_line: 3
+                rule_name: margin
+                email_clients:
+                  web:
+                    - Outlook.com
+                  desktop:
+                    - Notes 6 / 7
+              - error_line: 3
+                rule_name: padding
+                email_clients:
+                  desktop:
+                    - Outlook '07 / '10 / ‘13 (Partial)
+                    - Notes 6 / 7
+              - error_line: 5
+                rule_name: background-image
+                email_clients:
+                  web:
+                    - Outlook.com
+                  desktop:
+                    - Outlook '07 / '10 / ‘13
+                    - Notes 6 / 7
+                    - Lotus Notes 8.5
+              - error_line: 5
+                rule_name: background-position
+                email_clients:
+                  web:
+                    - Outlook.com
+                  desktop:
+                    - Outlook '07 / '10 / ‘13
+                    - Notes 6 / 7
+                    - Lotus Notes 8.5
+                  mobile:
+                    - Gmail
+                    - Windows Mobile 7.5
+              - error_line: 5
+                rule_name: background-repeat
+                email_clients:
+                  web:
+                    - Outlook.com
+                  desktop:
+                    - Outlook '07 / '10 / ‘13
+                    - Notes 6 / 7
+                    - Lotus Notes 8.5
+              - error_line: 9
+                rule_name: display
+                email_clients:
+                  web:
+                    - Gmail
+                  desktop:
+                    - Outlook '07 / '10 / ‘13
+                  mobile:
+                    - Gmail
+                    - Windows Mobile 7.5
+              - error_line: 20
+                rule_name: display
+                email_clients:
+                  web:
+                    - Gmail
+                  desktop:
+                    - Outlook '07 / '10 / ‘13
+                  mobile:
+                    - Gmail
+                    - Windows Mobile 7.5
+              - error_line: 24
+                rule_name: line-height
+                email_clients:
+                  desktop:
+                    - Notes 6 / 7
+              - error_line: 31
+                rule_name: font-size
+                email_clients:
+                  mobile:
+                    - iPhone / iPad (Partial)
+                    - Blackberry 6
+              - error_line: 32
+                rule_name: width
+                email_clients:
+                  desktop:
+                    - Outlook '07 / '10 / ‘13 (Partial)
+                    - Notes 6 / 7
+              - error_line: 32
+                rule_name: display
+                email_clients:
+                  web:
+                    - Gmail
+                  desktop:
+                    - Outlook '07 / '10 / ‘13
+                  mobile:
+                    - Gmail
+                    - Windows Mobile 7.5
+              - error_line: 37
+                rule_name: font-size
+                email_clients:
+                  mobile:
+                    - iPhone / iPad (Partial)
+                    - Blackberry 6
+              - error_line: 39
+                rule_name: line-height
+                email_clients:
+                  desktop:
+                    - Notes 6 / 7
+              - error_line: 40
+                rule_name: width
+                email_clients:
+                  desktop:
+                    - Outlook '07 / '10 / ‘13 (Partial)
+                    - Notes 6 / 7
+              - error_line: 40
+                rule_name: display
+                email_clients:
+                  web:
+                    - Gmail
+                  desktop:
+                    - Outlook '07 / '10 / ‘13
+                  mobile:
+                    - Gmail
+                    - Windows Mobile 7.5
+              - error_line: 50
+                rule_name: padding
+                email_clients:
+                  desktop:
+                    - Outlook '07 / '10 / ‘13 (Partial)
+                    - Notes 6 / 7
+              - error_line: 51
+                rule_name: font-size
+                email_clients:
+                  mobile:
+                    - iPhone / iPad (Partial)
+                    - Blackberry 6
+              - error_line: 53
+                rule_name: width
+                email_clients:
+                  desktop:
+                    - Outlook '07 / '10 / ‘13 (Partial)
+                    - Notes 6 / 7
+              - error_line: 53
+                rule_name: display
+                email_clients:
+                  web:
+                    - Gmail
+                  desktop:
+                    - Outlook '07 / '10 / ‘13
+                  mobile:
+                    - Gmail
+                    - Windows Mobile 7.5
+              - error_line: 65
+                rule_name: width
+                email_clients:
+                  desktop:
+                    - Outlook '07 / '10 / ‘13 (Partial)
+                    - Notes 6 / 7
+              - error_line: 65
+                rule_name: display
+                email_clients:
+                  web:
+                    - Gmail
+                  desktop:
+                    - Outlook '07 / '10 / ‘13
+                  mobile:
+                    - Gmail
+                    - Windows Mobile 7.5
+              - error_line: 81
+                rule_name: display
+                email_clients:
+                  web:
+                    - Gmail
+                  desktop:
+                    - Outlook '07 / '10 / ‘13
+                  mobile:
+                    - Gmail
+                    - Windows Mobile 7.5
+              - error_line: 91
+                rule_name: display
+                email_clients:
+                  web:
+                    - Gmail
+                  desktop:
+                    - Outlook '07 / '10 / ‘13
+                  mobile:
+                    - Gmail
+                    - Windows Mobile 7.5
+  securitySchemes:
+    Authorization:
+      type: http
+      scheme: bearer
+    JWT:
+      name: Api-Token
+      type: apiKey
+      in: header
+    API Key - 1:
+      name: API Key
+      type: apiKey
+      in: query
+  parameters:
+    Inbox-Id:
+      name: inbox_id
+      in: path
+      required: true
+      schema:
+        type: integer
+      description: ' inbox ID (identifier)'
+    message-id:
+      name: message_id
+      in: path
+      required: true
+      schema:
+        type: integer
+      description: message ID (identifier)
+security:
+  - Authorization: []
