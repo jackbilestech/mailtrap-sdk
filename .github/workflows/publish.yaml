@@ -33,7 +33,7 @@ jobs:
       matrix:
         include:
           - gen: typescript-axios
-            add-props: useSingleRequestParameter=true,npmName=@${{ github.repository }},npmVersion=${{ needs.get-deps.outputs.version }}
+            add-props: useSingleRequestParameter=true,npmName=@${{ github.repository }},npmVersion=${{ needs.get-version.outputs.version }}
             output: web
     steps:
       - uses: actions/download-artifact@v2
