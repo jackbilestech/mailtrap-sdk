@@ -82,3 +82,11 @@ jobs:
           access: "public" # only people in our org can access this pkg
           package: "./web/package.json"
           # dry-run: true # for testing purposes
+      - uses: JS-DevTools/npm-publish@v1 # publish to private registry
+        if: ${{ success() }}
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          registry: "https://npm.pkg.github.com" # npm registry
+          access: "public" # only people in our org can access this pkg
+          package: "./web/package.json"
+          # dry-run: true # for testing purposes
